@@ -1,3 +1,7 @@
 backend/uploads/students/*
 .env
 node_modules/
+old-backup/
+backend/config/db.php
+backend/config/auth.php
+test.php
