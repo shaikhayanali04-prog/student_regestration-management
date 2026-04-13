@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, BookOpen, GraduationCap, DollarSign, CalendarCheck, LogOut, Menu, Bell, Sun, Moon, Sparkles, X, ChevronRight, Activity, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useTheme } from '../components/ThemeProvider';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 import { ModeToggle } from '../components/ModeToggle';
 
@@ -21,7 +21,7 @@ export default function AdminLayout() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  useTheme();
 
   const handleLogout = async () => {
     try {

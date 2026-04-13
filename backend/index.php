@@ -51,6 +51,9 @@ switch($module) {
     case 'attendance':
         require_once __DIR__ . '/api/attendance.php';
         break;
+    case 'faculty':
+        require_once __DIR__ . '/api/faculty.php';
+        break;
     case 'expenses':
         require_once __DIR__ . '/api/expenses.php';
         break;

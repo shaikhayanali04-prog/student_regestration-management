@@ -1,37 +1,33 @@
 <?php
-// backend/api/students.php
-require_once __DIR__ . '/../config/db.php';
+
+require_once __DIR__ . '/../controllers/StudentController.php';
 
 $action = $_GET['action'] ?? '';
-$data = json_decode(file_get_contents("php://input"), true);
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$controller = new StudentController($conn);
 
-if ($method === 'GET' && empty($action)) {
-    $stmt = $conn->query("SELECT * FROM students ORDER BY id DESC");
-    $students = $stmt->fetchAll();
-    jsonResponse(true, "Students fetched", $students);
-} elseif ($method === 'GET' && $action === 'view' && isset($_GET['id'])) {
-    $stmt = $conn->prepare("SELECT * FROM students WHERE id = :id");
-    $stmt->execute(['id' => $_GET['id']]);
-    $student = $stmt->fetch();
-    if($student) jsonResponse(true, "Student fetched", $student);
-    else jsonResponse(false, "Student not found", null, 404);
-} elseif ($method === 'POST' && $action === 'add') {
-    $stmt = $conn->prepare("INSERT INTO students (admission_no, first_name, last_name, email, phone, dob, address) VALUES (:admission_no, :first_name, :last_name, :email, :phone, :dob, :address)");
-    try {
-        $stmt->execute([
-            'admission_no' => $data['admission_no'] ?? ('ADM-' . time()),
-            'first_name' => $data['first_name'] ?? '',
-            'last_name' => $data['last_name'] ?? '',
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'dob' => $data['dob'] ?? null,
-            'address' => $data['address'] ?? null
-        ]);
-        jsonResponse(true, "Student added successfully", ['id' => $conn->lastInsertId()]);
-    } catch(Exception $e) {
-        jsonResponse(false, "Error: " . $e->getMessage(), null, 500);
-    }
-} else {
-    jsonResponse(false, "Invalid student action", null, 400);
+if ($method === 'GET' && ($action === '' || $action === 'list')) {
+    $controller->index();
 }
-?>
+
+if ($method === 'GET' && $action === 'meta') {
+    $controller->meta();
+}
+
+if ($method === 'GET' && $action === 'view') {
+    $controller->show();
+}
+
+if ($method === 'POST' && $action === 'add') {
+    $controller->store();
+}
+
+if ($method === 'POST' && $action === 'update') {
+    $controller->update();
+}
+
+if ($method === 'POST' && $action === 'delete') {
+    $controller->destroy();
+}
+
+jsonResponse(false, 'Invalid student action.', null, 400);

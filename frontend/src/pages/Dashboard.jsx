@@ -1,208 +1,411 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Users, GraduationCap, DollarSign, ArrowUpRight, TrendingUp, CalendarCheck, BookOpen } from 'lucide-react';
-import { Skeleton } from '../components/ui/skeleton';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import api from '../services/api';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  AlertCircle,
+  CalendarCheck2,
+  Lightbulb,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import DashboardAlertsPanel from "../components/dashboard/DashboardAlertsPanel";
+import DashboardMetricCards from "../components/dashboard/DashboardMetricCards";
+import DashboardQuickActions from "../components/dashboard/DashboardQuickActions";
+import DashboardRecentActivity from "../components/dashboard/DashboardRecentActivity";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { EmptyState } from "../components/ui/empty-state";
+import { Skeleton } from "../components/ui/skeleton";
+import dashboardService from "../services/dashboardService";
 
-const mockRevenueData = [
-  { name: 'Jan', total: 1200 },
-  { name: 'Feb', total: 2100 },
-  { name: 'Mar', total: 1800 },
-  { name: 'Apr', total: 2400 },
-  { name: 'May', total: 2800 },
-  { name: 'Jun', total: 3200 },
-];
+const initialState = {
+  overview: {
+    total_students: 0,
+    active_courses: 0,
+    total_batches: 0,
+    fees_collected: 0,
+    pending_fees: 0,
+    overdue_fees: 0,
+    today_collection: 0,
+    expenses_total: 0,
+    net_profit: 0,
+    new_admissions_month: 0,
+    today_attendance_percentage: 0,
+    underfilled_batches: 0,
+  },
+  charts: {
+    revenue_trend: [],
+    attendance_trend: [],
+    course_performance: [],
+  },
+  recent_activity: [],
+  alerts: {
+    pending_fee_students: [],
+    payment_risk_students: [],
+    low_attendance_students: [],
+    underfilled_batches: [],
+    upcoming_dues: [],
+  },
+  insights: {
+    headline: "",
+    subheadline: "",
+    cards: [],
+    suggestions: [],
+    priority_counts: {
+      payment_risk: 0,
+      low_attendance: 0,
+      upcoming_dues: 0,
+    },
+    today_snapshot: {
+      collection: 0,
+      attendance_percentage: 0,
+    },
+  },
+};
 
-const mockAttendanceData = [
-  { name: 'Mon', present: 95 },
-  { name: 'Tue', present: 92 },
-  { name: 'Wed', present: 88 },
-  { name: 'Thu', present: 96 },
-  { name: 'Fri', present: 91 },
-  { name: 'Sat', present: 82 },
-];
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+
+const insightToneStyles = {
+  positive: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  warning: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  destructive: "border-destructive/20 bg-destructive/10 text-destructive",
+};
 
 export default function Dashboard() {
-  const [stats, setStats] = useState(null);
+  const [data, setData] = useState(initialState);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await api.get('/dashboard?action=stats');
-        if (res.data.success) {
-          setStats(res.data.data);
-        }
-      } catch (e) {
-        console.error("Error fetching stats", e);
-      } finally {
-        setLoading(false);
-      }
+  const loadDashboard = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await dashboardService.getOverview();
+      setData(response || initialState);
+    } catch (requestError) {
+      setError(
+        requestError?.response?.data?.message ||
+          "We couldn't load the dashboard right now.",
+      );
+    } finally {
+      setLoading(false);
     }
-    fetchStats();
   }, []);
 
-  if (loading) return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
-        <div>
-          <Skeleton className="h-8 w-64 md:w-96 rounded-lg mb-2" />
-          <Skeleton className="h-4 w-48 rounded-md" />
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const revenueChart = useMemo(() => data.charts?.revenue_trend || [], [data.charts]);
+  const attendanceChart = useMemo(() => data.charts?.attendance_trend || [], [data.charts]);
+  const courseChart = useMemo(() => data.charts?.course_performance || [], [data.charts]);
+
+  if (loading) {
+    return (
+      <div className="space-y-8 pb-12">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <Skeleton className="h-10 w-72 rounded-2xl" />
+            <Skeleton className="h-4 w-80 rounded-full" />
+          </div>
+          <Skeleton className="h-12 w-48 rounded-full" />
         </div>
-        <Skeleton className="h-10 w-40 rounded-full" />
+        <Skeleton className="h-64 rounded-[32px]" />
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <Skeleton key={item} className="h-36 rounded-[28px]" />
+          ))}
+        </div>
+        <Skeleton className="h-52 rounded-[30px]" />
+        <div className="grid gap-6 xl:grid-cols-3">
+          <Skeleton className="h-[360px] rounded-[30px] xl:col-span-2" />
+          <Skeleton className="h-[360px] rounded-[30px]" />
+        </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1,2,3,4].map(i => <Skeleton key={i} className="h-36 rounded-2xl" />)}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Skeleton className="h-96 rounded-2xl lg:col-span-2" />
-        <Skeleton className="h-96 rounded-2xl" />
-      </div>
-    </div>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        icon={AlertCircle}
+        title="Dashboard unavailable"
+        description={error}
+        action={<Button onClick={loadDashboard}>Retry Dashboard</Button>}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500 pb-12">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-8 pb-12">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight">Dashboard Overview</h2>
-          <p className="text-muted-foreground mt-1">Here's what is happening with your institute today.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            Operations Center
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
+            Dashboard Command Center
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Monitor admissions, collections, attendance, and operating risks from one live command center.
+          </p>
         </div>
-        <div className="bg-card px-5 py-2.5 rounded-full border border-border shadow-sm text-sm font-semibold flex items-center gap-2.5 text-foreground hover:shadow-md transition-shadow">
-          <CalendarCheck className="w-4 h-4 text-primary" />
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+
+        <div className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-sm">
+          {new Date().toLocaleDateString("en-IN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
         </div>
       </div>
 
-      {/* Premium KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card className="border-border shadow-sm overflow-hidden relative group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-blue-50/10 dark:to-blue-900/10">
-          <div className="absolute inset-x-0 -bottom-2 h-1/2 bg-gradient-to-t from-blue-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Students</CardTitle>
-            <div className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl group-hover:scale-110 transition-transform">
-              <Users className="w-4 h-4" />
+      <Card className="overflow-hidden rounded-[32px] border-border bg-gradient-to-br from-primary/20 via-card to-card shadow-lg">
+        <CardContent className="grid gap-6 p-6 xl:grid-cols-[1.2fr,0.8fr]">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+              <Sparkles className="h-4 w-4" />
+              Smart Dashboard
+            </div>
+            <h2 className="mt-5 text-4xl font-black tracking-tight text-foreground">
+              {data.insights?.headline || "Institute pulse"}
+            </h2>
+            <p className="mt-3 max-w-2xl text-lg leading-8 text-muted-foreground">
+              {data.insights?.subheadline}
+            </p>
+
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              {(data.insights?.cards || []).map((card) => (
+                <div
+                  key={card.title}
+                  className={`rounded-3xl border px-4 py-5 ${insightToneStyles[card.tone] || insightToneStyles.warning}`}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">
+                    Alert
+                  </p>
+                  <p className="mt-3 text-3xl font-black">{card.value}</p>
+                  <p className="mt-2 text-sm font-semibold leading-6">{card.title}</p>
+                  <p className="mt-2 text-sm leading-6 opacity-90">{card.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-border bg-background/80 p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Lightbulb className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Suggested Actions
+                </p>
+                <p className="text-lg font-semibold text-foreground">What to do next</p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {(data.insights?.suggestions || []).map((suggestion, index) => (
+                <div key={index} className="rounded-2xl border border-border bg-muted/10 px-4 py-4 text-sm leading-6 text-foreground">
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Today's Collection
+                </p>
+                <p className="mt-2 text-2xl font-black text-foreground">
+                  {formatCurrency(data.insights?.today_snapshot?.collection || 0)}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Today's Attendance
+                </p>
+                <p className="mt-2 text-2xl font-black text-foreground">
+                  {data.insights?.today_snapshot?.attendance_percentage || 0}%
+                </p>
+              </div>
+            </div>
+
+            <Button asChild className="mt-6 w-full gap-2">
+              <Link to="/admin/fees">
+                <TrendingUp className="h-4 w-4" />
+                Review Priority Work
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <DashboardMetricCards overview={data.overview} />
+
+      <DashboardQuickActions />
+
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Card className="rounded-[30px] border-border shadow-sm xl:col-span-2">
+          <CardHeader className="border-b border-border bg-muted/10">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-2xl">Revenue vs Expenses</CardTitle>
+                <CardDescription>Fee collections and expenses across the last 6 months.</CardDescription>
+              </div>
+              <div className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+                Last 6 months
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-4xl font-black tracking-tight">{stats?.total_students || 0}</div>
-            <p className="text-xs font-semibold mt-2 flex items-center text-blue-600 dark:text-blue-400">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" /> Active enrollments
-            </p>
+          <CardContent className="pt-6">
+            {revenueChart.length ? (
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="dashboardRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="dashboardExpense" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#fb7185" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#fb7185" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `Rs. ${value}`} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        borderRadius: "12px",
+                        border: "1px solid hsl(var(--border))",
+                      }}
+                    />
+                    <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#dashboardRevenue)" strokeWidth={3} />
+                    <Area type="monotone" dataKey="expenses" stroke="#fb7185" fill="url(#dashboardExpense)" strokeWidth={3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <EmptyState
+                title="No revenue trend yet"
+                description="Fee collections and expenses will appear here once operational data is recorded."
+              />
+            )}
           </CardContent>
         </Card>
 
-        <Card className="border-border shadow-sm overflow-hidden relative group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-emerald-50/10 dark:to-emerald-900/10">
-          <div className="absolute inset-x-0 -bottom-2 h-1/2 bg-gradient-to-t from-emerald-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Fees Collected</CardTitle>
-            <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
-              <DollarSign className="w-4 h-4" />
-            </div>
+        <Card className="rounded-[30px] border-border shadow-sm">
+          <CardHeader className="border-b border-border bg-muted/10">
+            <CardTitle className="text-2xl">Attendance Trend</CardTitle>
+            <CardDescription>Daily attendance percentage over the last 7 days.</CardDescription>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-4xl font-black tracking-tight">${stats?.fees_collected || 0}</div>
-            <p className="text-xs font-semibold mt-2 flex items-center text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" /> +12.5% this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border shadow-sm overflow-hidden relative group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-rose-50/10 dark:to-rose-900/10">
-          <div className="absolute inset-x-0 -bottom-2 h-1/2 bg-gradient-to-t from-rose-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Fees</CardTitle>
-            <div className="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl group-hover:scale-110 transition-transform">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-4xl font-black tracking-tight">${stats?.pending_fees || 0}</div>
-            <p className="text-xs font-semibold mt-2 flex items-center text-rose-600 dark:text-rose-400">
-              Action required
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border shadow-sm overflow-hidden relative group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-card to-purple-50/10 dark:to-purple-900/10">
-          <div className="absolute inset-x-0 -bottom-2 h-1/2 bg-gradient-to-t from-purple-500/10 to-transparent"></div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active Courses</CardTitle>
-            <div className="p-2.5 bg-purple-500/10 text-purple-500 rounded-xl group-hover:scale-110 transition-transform">
-              <BookOpen className="w-4 h-4" />
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-4xl font-black tracking-tight">{stats?.total_courses || 0}</div>
-            <p className="text-xs font-semibold mt-2 flex items-center text-purple-600 dark:text-purple-400">
-              Across 12 batches
-            </p>
+          <CardContent className="pt-6">
+            {attendanceChart.length ? (
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={attendanceChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
+                    <Tooltip
+                      cursor={{ fill: "hsl(var(--muted))" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        borderRadius: "12px",
+                        border: "1px solid hsl(var(--border))",
+                      }}
+                    />
+                    <Bar dataKey="attendance_percentage" fill="hsl(var(--primary))" radius={[10, 10, 0, 0]} maxBarSize={42} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <EmptyState
+                icon={CalendarCheck2}
+                title="No attendance trend yet"
+                description="Start marking attendance to populate the weekly operational trend."
+              />
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        <Card className="lg:col-span-4 border-border shadow-sm">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Revenue Overview</CardTitle>
-                <CardDescription>Monthly fee collection trends</CardDescription>
+      <Card className="rounded-[30px] border-border shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/10">
+          <CardTitle className="text-2xl">Course Performance</CardTitle>
+          <CardDescription>Top courses by enrolled students with collection depth.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-6 p-6 xl:grid-cols-[1.2fr,0.8fr]">
+          <div>
+            {courseChart.length ? (
+              <div className="h-[320px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={courseChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                    <XAxis dataKey="course_name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        borderRadius: "12px",
+                        border: "1px solid hsl(var(--border))",
+                      }}
+                    />
+                    <Bar dataKey="enrolled_students" fill="hsl(var(--primary))" radius={[10, 10, 0, 0]} maxBarSize={48} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <div className="bg-muted px-3 py-1 rounded-md text-xs font-medium">Last 6 Months</div>
-            </div>
-          </CardHeader>
-          <CardContent className="pl-0 pb-4">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockRevenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Area type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+            ) : (
+              <EmptyState
+                title="No course performance data"
+                description="Course metrics will appear here once students start enrolling."
+              />
+            )}
+          </div>
 
-        <Card className="lg:col-span-3 border-border shadow-sm">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Recent Attendance</CardTitle>
-                <CardDescription>Average present percentage</CardDescription>
+          <div className="space-y-4">
+            {courseChart.map((course) => (
+              <div key={course.course_id} className="rounded-3xl border border-border bg-background/60 p-5">
+                <p className="font-semibold text-foreground">{course.course_name}</p>
+                <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
+                  <p>
+                    Students: <span className="font-medium text-foreground">{course.enrolled_students}</span>
+                  </p>
+                  <p>
+                    Collected: <span className="font-medium text-foreground">{formatCurrency(course.collected_amount)}</span>
+                  </p>
+                  <p>
+                    Pending: <span className="font-medium text-foreground">{formatCurrency(course.pending_amount)}</span>
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockAttendanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    cursor={{ fill: 'hsl(var(--muted))' }}
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
-                  />
-                  <Bar dataKey="present" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 xl:grid-cols-[0.9fr,1.1fr]">
+        <DashboardRecentActivity items={data.recent_activity} />
+        <DashboardAlertsPanel alerts={data.alerts} />
       </div>
     </div>
   );

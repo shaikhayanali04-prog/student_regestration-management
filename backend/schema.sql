@@ -20,17 +20,25 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
+  `phone` varchar(30) DEFAULT NULL,
+  `phone_normalized` varchar(20) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
+  `google_id` varchar(191) DEFAULT NULL,
+  `avatar_url` varchar(255) DEFAULT NULL,
+  `google_email_verified` tinyint(1) NOT NULL DEFAULT 0,
   `role` enum('superadmin','admin') DEFAULT 'admin',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `last_login_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `phone_normalized` (`phone_normalized`),
+  UNIQUE KEY `google_id` (`google_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Seed default admin (password: password123)
 -- hash: $2y$10$J3SSTaPtUIkcigU0gbQtE.ELYENcl/CSkDk.cN0K0AJWd38iKYLmG (standard bcrypt for password)
-INSERT INTO `users` (`name`, `email`, `password`, `role`) VALUES
-('Admin User', 'admin@example.com', '$2y$10$J3SSTaPtUIkcigU0gbQtE.ELYENcl/CSkDk.cN0K0AJWd38iKYLmG', 'superadmin');
+INSERT INTO `users` (`name`, `email`, `phone`, `phone_normalized`, `password`, `role`) VALUES
+('Admin User', 'admin@example.com', '9876543210', '9876543210', '$2y$10$J3SSTaPtUIkcigU0gbQtE.ELYENcl/CSkDk.cN0K0AJWd38iKYLmG', 'superadmin');
 
 --
 -- Table structure for table `students`
