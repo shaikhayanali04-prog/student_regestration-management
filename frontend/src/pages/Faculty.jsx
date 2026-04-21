@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, RotateCcw, Search, UserRound } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { EmptyState } from "../components/ui/empty-state";
@@ -25,6 +26,8 @@ const initialResult = {
     pagination: { page: 1, limit: 8, total: 0, total_pages: 1 },
   },
 };
+
+const MotionDiv = motion.div;
 
 export default function Faculty() {
   const [facultyResult, setFacultyResult] = useState(initialResult);
@@ -196,26 +199,27 @@ export default function Faculty() {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6 pb-10"
+    >
+      <div className="page-header">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-            Faculty Module
-          </p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
-            Faculty Management
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          <p className="page-kicker">Faculty Module</p>
+          <h1 className="page-title">Faculty Management</h1>
+          <p className="page-description">
             Manage teachers, subject specialization, and live batch ownership with a real operational directory.
           </p>
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="outline" className="gap-2" onClick={fetchFaculty}>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="secondary" onClick={fetchFaculty}>
             <RotateCcw className="h-4 w-4" />
             Refresh
           </Button>
-          <Button className="gap-2" onClick={openCreateDialog}>
+          <Button onClick={openCreateDialog}>
             <Plus className="h-4 w-4" />
             Add Faculty
           </Button>
@@ -224,10 +228,10 @@ export default function Faculty() {
 
       {feedback ? (
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${
+          className={`rounded-2xl border px-4 py-3 text-sm shadow-sm ${
             feedback.type === "error"
-              ? "border-destructive/20 bg-destructive/10 text-destructive"
-              : "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              ? "border-red-200 bg-red-50 text-red-600"
+              : "border-green-200 bg-green-50 text-green-700"
           }`}
         >
           {feedback.message}
@@ -237,7 +241,7 @@ export default function Faculty() {
       {loading ? (
         <div className="space-y-4">
           <FacultySummaryCards summary={summary} />
-          <Card className="rounded-[28px] border-border">
+          <Card>
             <CardContent className="space-y-3 p-6">
               {[1, 2, 3, 4].map((item) => (
                 <Skeleton key={item} className="h-20 rounded-2xl" />
@@ -255,26 +259,26 @@ export default function Faculty() {
         <>
           <FacultySummaryCards summary={summary} />
 
-          <Card className="rounded-[30px] border-border shadow-sm">
-            <CardHeader className="space-y-4 border-b border-border bg-muted/10">
+          <Card>
+            <CardHeader className="space-y-4 border-b border-gray-100 bg-slate-50/80">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div>
-                  <CardTitle className="text-2xl">Faculty Directory</CardTitle>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <CardTitle className="text-xl">Faculty Directory</CardTitle>
+                  <p className="mt-1 text-sm text-text-secondary">
                     Search, filter, manage, and inspect the teaching team in one place.
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 md:flex-row">
-                  <div className="relative min-w-[280px]">
+                  <div className="search-shell min-w-[280px] bg-white">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={searchInput}
                       onChange={(event) => setSearchInput(event.target.value)}
                       placeholder="Search by name, ID, email, phone, or subject"
-                      className="rounded-full pl-10"
+                      className="border-0 pl-10 shadow-none focus-visible:ring-0"
                     />
                   </div>
-                  <Button variant="outline" className="rounded-full" onClick={resetFilters}>
+                  <Button variant="secondary" onClick={resetFilters}>
                     Clear Filters
                   </Button>
                 </div>
@@ -284,7 +288,7 @@ export default function Faculty() {
                 <select
                   value={query.status}
                   onChange={(event) => updateFilter("status", event.target.value)}
-                  className="flex h-10 w-full rounded-full border border-input bg-background px-4 text-sm"
+                  className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-text-primary shadow-sm"
                 >
                   <option value="">All statuses</option>
                   {(meta.statuses || []).map((status) => (
@@ -296,7 +300,7 @@ export default function Faculty() {
                 <select
                   value={String(query.limit)}
                   onChange={(event) => updateFilter("limit", Number(event.target.value))}
-                  className="flex h-10 w-full rounded-full border border-input bg-background px-4 text-sm"
+                  className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-text-primary shadow-sm"
                 >
                   {[8, 12, 20].map((size) => (
                     <option key={size} value={size}>
@@ -330,14 +334,14 @@ export default function Faculty() {
                     onDelete={setDeletingFaculty}
                   />
 
-                  <div className="flex flex-col gap-4 border-t border-border px-6 py-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-4 border-t border-gray-100 px-6 py-4 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
                     <p>
                       Showing {(pagination.page - 1) * pagination.limit + 1}-
                       {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} faculty records
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => setQuery((current) => ({ ...current, page: current.page - 1 }))}
                         disabled={pagination.page <= 1}
@@ -348,7 +352,7 @@ export default function Faculty() {
                         Page {pagination.page} of {pagination.total_pages || 1}
                       </span>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => setQuery((current) => ({ ...current, page: current.page + 1 }))}
                         disabled={pagination.page >= pagination.total_pages}
@@ -389,6 +393,6 @@ export default function Faculty() {
         onClose={() => setDeletingFaculty(null)}
         onConfirm={handleDelete}
       />
-    </div>
+    </MotionDiv>
   );
 }

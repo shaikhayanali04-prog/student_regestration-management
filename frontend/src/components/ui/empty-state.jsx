@@ -8,18 +8,19 @@ export function EmptyState({
   action 
 }) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center bg-card border border-border rounded-xl shadow-sm min-h-[300px]">
-      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-sky-100 text-primary shadow-sm">
         {React.createElement(IconComponent, {
-          className: "w-8 h-8 text-muted-foreground",
+          className: "h-8 w-8",
         })}
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6 pb-2">
+      <p className="page-kicker">Empty State</p>
+      <h3 className="mt-2 font-display text-xl font-semibold text-text-primary">{title}</h3>
+      <p className="mt-2 max-w-md text-sm leading-6 text-text-secondary">
         {description}
       </p>
       {action && (
-        <div className="mt-2">
+        <div className="mt-6">
           {action}
         </div>
       )}

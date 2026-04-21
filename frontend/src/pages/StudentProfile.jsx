@@ -10,6 +10,7 @@ import {
   Phone,
   Wallet,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
@@ -21,10 +22,22 @@ import studentService from "../services/studentService";
 const tabs = ["Overview", "Fees", "Attendance", "Performance", "Documents", "Notes"];
 
 const formatDate = (value) =>
-  value ? new Date(value).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "Not available";
+  value
+    ? new Date(value).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "Not available";
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+
+const MotionDiv = motion.div;
 
 export default function StudentProfile() {
   const { studentId } = useParams();
@@ -88,7 +101,12 @@ export default function StudentProfile() {
         icon: CalendarDays,
       },
     ],
-    [attendance?.summary?.attendance_percentage, fees?.summary?.due_amount, student?.batch_name, student?.course_name],
+    [
+      attendance?.summary?.attendance_percentage,
+      fees?.summary?.due_amount,
+      student?.batch_name,
+      student?.course_name,
+    ],
   );
 
   const handleUpdate = async (payload) => {
@@ -140,37 +158,42 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6 pb-10"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <Button variant="ghost" asChild className="mb-3 -ml-3 text-muted-foreground">
+          <Button variant="ghost" asChild className="mb-3 -ml-3 text-text-secondary">
             <Link to="/admin/students">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to students
             </Link>
           </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary">
             {student.full_name}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {student.student_id} • Admitted on {formatDate(student.admission_date)}
+          <p className="mt-1 text-sm text-text-secondary">
+            {student.student_id} | Admitted on {formatDate(student.admission_date)}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <StudentStatusBadge status={student.status} />
-          <Button className="gap-2" onClick={() => setEditing(true)}>
+          <Button onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" />
             Edit Student
           </Button>
         </div>
       </div>
 
-      <Card className="overflow-hidden rounded-[28px] border-border bg-gradient-to-br from-primary/15 via-card to-card shadow-lg">
+      <Card className="overflow-hidden border-gray-100 bg-gradient-to-br from-primary/10 via-white to-sky-50">
         <CardContent className="p-0">
           <div className="grid gap-0 lg:grid-cols-[280px,1fr]">
-            <div className="border-b border-border/70 bg-background/60 p-6 lg:border-b-0 lg:border-r">
-              <div className="mx-auto flex h-40 w-40 items-center justify-center overflow-hidden rounded-3xl border border-border bg-muted">
+            <div className="border-b border-gray-100 bg-white/80 p-6 lg:border-b-0 lg:border-r">
+              <div className="mx-auto flex h-40 w-40 items-center justify-center overflow-hidden rounded-3xl border border-gray-100 bg-slate-50">
                 {student.student_photo ? (
                   <img
                     src={student.student_photo}
@@ -178,35 +201,35 @@ export default function StudentProfile() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-5xl font-black text-primary">
+                  <span className="font-display text-5xl font-bold text-primary">
                     {student.full_name?.charAt(0) || "S"}
                   </span>
                 )}
               </div>
               <div className="mt-6 space-y-4">
-                <div className="rounded-2xl border border-border bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
                     Contact
                   </p>
                   <div className="mt-3 space-y-3 text-sm">
-                    <div className="flex items-center gap-3 text-foreground">
+                    <div className="flex items-center gap-3 text-text-primary">
                       <Phone className="h-4 w-4 text-primary" />
                       {student.phone || "Not available"}
                     </div>
-                    <div className="flex items-center gap-3 text-foreground">
+                    <div className="flex items-center gap-3 text-text-primary">
                       <Mail className="h-4 w-4 text-primary" />
                       {student.email || "Not available"}
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-border bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
                     Guardian
                   </p>
-                  <div className="mt-3 space-y-2 text-sm text-foreground">
+                  <div className="mt-3 space-y-2 text-sm text-text-primary">
                     <p>{student.parent_name || "Not available"}</p>
-                    <p className="text-muted-foreground">
+                    <p className="text-text-secondary">
                       {student.parent_phone || "No guardian phone"}
                     </p>
                   </div>
@@ -221,30 +244,32 @@ export default function StudentProfile() {
                   return (
                     <div
                       key={item.label}
-                      className="rounded-3xl border border-border bg-card/90 p-4 shadow-sm"
+                      className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
                     >
-                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-sky-100 text-primary">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                         {item.label}
                       </p>
-                      <p className="mt-2 text-lg font-bold text-foreground">{item.value}</p>
+                      <p className="mt-2 font-mono text-lg font-bold text-text-primary">
+                        {item.value}
+                      </p>
                     </div>
                   );
                 })}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-border bg-background/60 p-2">
+              <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-gray-100 bg-white/85 p-2 shadow-sm">
                 {tabs.map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
+                    className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
                       activeTab === tab
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-text-secondary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
                     {tab}
@@ -255,54 +280,64 @@ export default function StudentProfile() {
               <div className="mt-6">
                 {activeTab === "Overview" ? (
                   <div className="grid gap-6 lg:grid-cols-2">
-                    <Card className="rounded-3xl border-border">
+                    <Card>
                       <CardHeader>
                         <CardTitle>Admission Snapshot</CardTitle>
-                        <CardDescription>Core academic placement and current lifecycle stage.</CardDescription>
+                        <CardDescription>
+                          Core academic placement and current lifecycle stage.
+                        </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4 text-sm">
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Student ID</span>
-                          <span className="font-medium text-foreground">{student.student_id}</span>
+                          <span className="text-text-secondary">Student ID</span>
+                          <span className="font-medium text-text-primary">{student.student_id}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Course</span>
-                          <span className="font-medium text-foreground">{student.course_name || "Unassigned"}</span>
+                          <span className="text-text-secondary">Course</span>
+                          <span className="font-medium text-text-primary">
+                            {student.course_name || "Unassigned"}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Batch</span>
-                          <span className="font-medium text-foreground">{student.batch_name || "Unassigned"}</span>
+                          <span className="text-text-secondary">Batch</span>
+                          <span className="font-medium text-text-primary">
+                            {student.batch_name || "Unassigned"}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Date of Birth</span>
-                          <span className="font-medium text-foreground">{formatDate(student.date_of_birth)}</span>
+                          <span className="text-text-secondary">Date of Birth</span>
+                          <span className="font-medium text-text-primary">
+                            {formatDate(student.date_of_birth)}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Gender</span>
-                          <span className="font-medium text-foreground">{student.gender || "Not specified"}</span>
+                          <span className="text-text-secondary">Gender</span>
+                          <span className="font-medium text-text-primary">
+                            {student.gender || "Not specified"}
+                          </span>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="rounded-3xl border-border">
+                    <Card>
                       <CardHeader>
                         <CardTitle>Address & Notes</CardTitle>
                         <CardDescription>Operational context for the admin team.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4 text-sm">
                         <div>
-                          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                             Address
                           </p>
-                          <p className="leading-6 text-foreground">
+                          <p className="leading-6 text-text-primary">
                             {student.address || "Address not captured yet."}
                           </p>
                         </div>
                         <div>
-                          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                             Notes
                           </p>
-                          <p className="leading-6 text-foreground">
+                          <p className="leading-6 text-text-primary">
                             {student.notes || "No notes available for this student."}
                           </p>
                         </div>
@@ -314,19 +349,19 @@ export default function StudentProfile() {
                 {activeTab === "Fees" ? (
                   <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-3">
-                      <Card className="rounded-3xl border-border">
+                      <Card>
                         <CardHeader>
                           <CardDescription>Total Fee</CardDescription>
                           <CardTitle>{formatCurrency(fees?.summary?.total_fee || 0)}</CardTitle>
                         </CardHeader>
                       </Card>
-                      <Card className="rounded-3xl border-border">
+                      <Card>
                         <CardHeader>
                           <CardDescription>Collected</CardDescription>
                           <CardTitle>{formatCurrency(fees?.summary?.amount_paid || 0)}</CardTitle>
                         </CardHeader>
                       </Card>
-                      <Card className="rounded-3xl border-border">
+                      <Card>
                         <CardHeader>
                           <CardDescription>Pending</CardDescription>
                           <CardTitle>{formatCurrency(fees?.summary?.due_amount || 0)}</CardTitle>
@@ -335,24 +370,28 @@ export default function StudentProfile() {
                     </div>
 
                     {fees?.history?.length ? (
-                      <Card className="rounded-3xl border-border">
+                      <Card>
                         <CardHeader>
                           <CardTitle>Payment History</CardTitle>
-                          <CardDescription>Recorded fee collections for this student.</CardDescription>
+                          <CardDescription>
+                            Recorded fee collections for this student.
+                          </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                           {fees.history.map((item) => (
                             <div
                               key={item.id}
-                              className="flex flex-col gap-3 rounded-2xl border border-border p-4 md:flex-row md:items-center md:justify-between"
+                              className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-slate-50/70 p-4 md:flex-row md:items-center md:justify-between"
                             >
                               <div>
-                                <p className="font-semibold text-foreground">{formatCurrency(item.amount_paid)}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {item.payment_method} • {formatDate(item.payment_date)}
+                                <p className="font-semibold text-text-primary">
+                                  {formatCurrency(item.amount_paid)}
+                                </p>
+                                <p className="text-sm text-text-secondary">
+                                  {item.payment_method} | {formatDate(item.payment_date)}
                                 </p>
                               </div>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-text-secondary">
                                 {item.remarks || "No remarks"}
                               </p>
                             </div>
@@ -377,7 +416,7 @@ export default function StudentProfile() {
                         ["Absent", attendance?.summary?.absent_count || 0],
                         ["Late", attendance?.summary?.late_count || 0],
                       ].map(([label, value]) => (
-                        <Card key={label} className="rounded-3xl border-border">
+                        <Card key={label}>
                           <CardHeader>
                             <CardDescription>{label}</CardDescription>
                             <CardTitle>{value}</CardTitle>
@@ -387,26 +426,30 @@ export default function StudentProfile() {
                     </div>
 
                     {attendance?.history?.length ? (
-                      <Card className="rounded-3xl border-border">
+                      <Card>
                         <CardHeader>
                           <CardTitle>Attendance History</CardTitle>
-                          <CardDescription>Latest attendance records across batches.</CardDescription>
+                          <CardDescription>
+                            Latest attendance records across batches.
+                          </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                           {attendance.history.map((item) => (
                             <div
                               key={item.id}
-                              className="flex flex-col gap-3 rounded-2xl border border-border p-4 md:flex-row md:items-center md:justify-between"
+                              className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-slate-50/70 p-4 md:flex-row md:items-center md:justify-between"
                             >
                               <div>
-                                <p className="font-semibold text-foreground">{formatDate(item.date)}</p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="font-semibold text-text-primary">
+                                  {formatDate(item.date)}
+                                </p>
+                                <p className="text-sm text-text-secondary">
                                   {item.batch_name || "Batch unavailable"}
                                 </p>
                               </div>
                               <div className="text-right">
                                 <StudentStatusBadge status={item.status} />
-                                <p className="mt-2 text-sm text-muted-foreground">
+                                <p className="mt-2 text-sm text-text-secondary">
                                   {item.remarks || "No remarks"}
                                 </p>
                               </div>
@@ -438,13 +481,13 @@ export default function StudentProfile() {
                 ) : null}
 
                 {activeTab === "Notes" ? (
-                  <Card className="rounded-3xl border-border">
+                  <Card>
                     <CardHeader>
                       <CardTitle>Advisor Notes</CardTitle>
                       <CardDescription>Shared context for admissions and follow-up.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="whitespace-pre-wrap leading-7 text-foreground">
+                      <p className="whitespace-pre-wrap leading-7 text-text-primary">
                         {student.notes || "No notes are available for this student yet."}
                       </p>
                     </CardContent>
@@ -470,6 +513,6 @@ export default function StudentProfile() {
         }}
         onSubmit={handleUpdate}
       />
-    </div>
+    </MotionDiv>
   );
 }

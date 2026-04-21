@@ -35,23 +35,18 @@ export default function BatchSummaryCards({ summary = {} }) {
         const Icon = card.icon;
 
         return (
-          <Card
-            key={card.key}
-            className={`overflow-hidden rounded-[28px] border-border bg-gradient-to-br ${card.accent}`}
-          >
-            <CardContent className="flex items-start justify-between p-6">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                  {card.label}
-                </p>
-                <p className="mt-3 text-3xl font-black tracking-tight text-foreground">
-                  {summary[card.key] || 0}
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-background/70 text-primary shadow-sm">
-                <Icon className="h-5 w-5" />
-              </div>
-            </CardContent>
+          <Card key={card.key} className="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 font-mono">
+                {summary[card.key] || 0}
+              </p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mt-0.5">
+                {card.label}
+              </p>
+            </div>
           </Card>
         );
       })}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/LoginScreen';
 import AdminLayout from './layout/AdminLayout.replacement';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,12 +15,14 @@ import FeeLedgerProfile from './pages/FeeLedgerProfile';
 import Attendance from './pages/Attendance';
 import Faculty from './pages/Faculty';
 import FacultyProfile from './pages/FacultyProfile';
-import Landing from './pages/Landing';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<Login />} />
         
         <Route element={<ProtectedRoute />}>
@@ -40,7 +42,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="/" element={<Landing />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

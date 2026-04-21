@@ -45,13 +45,20 @@ class DashboardModel
 
         $stmt = $this->conn->query(
             "SELECT
-                (SELECT COUNT(*) FROM students WHERE status = 'Active') AS total_students,
+                (SELECT COUNT(*) FROM students) AS total_students,
+                (SELECT COUNT(*) FROM students WHERE status = 'Active') AS active_students,
                 (SELECT COUNT(*) FROM courses WHERE status = 'Active') AS active_courses,
-                (SELECT COUNT(*) FROM batches WHERE status IN ('Active', 'Planned')) AS total_batches,
+                (SELECT COUNT(*) FROM batches) AS total_batches,
+                (SELECT COUNT(*) FROM batches WHERE status = 'Active') AS active_batches,
+                (SELECT COUNT(*) FROM batches WHERE status = 'Planned') AS planned_batches,
                 (SELECT COUNT(*) FROM students
                     WHERE admission_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
                 ) AS new_admissions_month,
                 (SELECT COALESCE(SUM(amount_paid + COALESCE(late_fee, 0)), 0) FROM fees) AS fees_collected,
+                (SELECT COALESCE(SUM(amount_paid + COALESCE(late_fee, 0)), 0)
+                    FROM fees
+                    WHERE payment_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                ) AS revenue_this_month,
                 (SELECT COALESCE(SUM(amount_paid + COALESCE(late_fee, 0)), 0)
                     FROM fees
                     WHERE payment_date = CURDATE()
@@ -118,9 +125,13 @@ class DashboardModel
 
         return [
             'total_students' => (int) ($row['total_students'] ?? 0),
+            'active_students' => (int) ($row['active_students'] ?? 0),
             'active_courses' => (int) ($row['active_courses'] ?? 0),
+            'active_batches' => (int) ($row['active_batches'] ?? 0),
             'total_batches' => (int) ($row['total_batches'] ?? 0),
+            'planned_batches' => (int) ($row['planned_batches'] ?? 0),
             'fees_collected' => $feesCollected,
+            'revenue_this_month' => (float) ($row['revenue_this_month'] ?? 0),
             'pending_fees' => (float) ($row['pending_fees'] ?? 0),
             'overdue_fees' => (float) ($row['overdue_fees'] ?? 0),
             'today_collection' => (float) ($row['today_collection'] ?? 0),

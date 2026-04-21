@@ -8,6 +8,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { EmptyState } from "../components/ui/empty-state";
@@ -22,6 +23,8 @@ const formatCurrency = (value) =>
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(value || 0);
+
+const MotionDiv = motion.div;
 
 export default function CourseProfile() {
   const { courseId } = useParams();
@@ -62,7 +65,11 @@ export default function CourseProfile() {
   const stats = useMemo(
     () => [
       { label: "Fee Amount", value: formatCurrency(course?.fee_amount || 0), icon: Wallet },
-      { label: "Duration", value: course?.duration_months ? `${course.duration_months} months` : "Flexible", icon: BookOpen },
+      {
+        label: "Duration",
+        value: course?.duration_months ? `${course.duration_months} months` : "Flexible",
+        icon: BookOpen,
+      },
       { label: "Batches", value: course?.batch_count || 0, icon: GraduationCap },
       { label: "Students", value: course?.enrolled_students || 0, icon: Users },
     ],
@@ -123,41 +130,46 @@ export default function CourseProfile() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6 pb-10"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <Button variant="ghost" asChild className="mb-3 -ml-3 text-muted-foreground">
+          <Button variant="ghost" asChild className="mb-3 -ml-3 text-text-secondary">
             <Link to="/admin/courses">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to courses
             </Link>
           </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary">
             {course.course_name}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {course.course_id} • {course.mode} delivery
+          <p className="mt-1 text-sm text-text-secondary">
+            {course.course_id} | {course.mode} delivery
           </p>
         </div>
         <div className="flex items-center gap-3">
           <CourseStatusBadge value={course.status} />
-          <Button className="gap-2" onClick={() => setEditing(true)}>
+          <Button onClick={() => setEditing(true)}>
             <Pencil className="h-4 w-4" />
             Edit Course
           </Button>
         </div>
       </div>
 
-      <Card className="overflow-hidden rounded-[28px] border-border bg-gradient-to-br from-primary/15 via-card to-card shadow-lg">
+      <Card className="overflow-hidden border-gray-100 bg-gradient-to-br from-primary/10 via-white to-sky-50">
         <CardContent className="p-0">
           <div className="grid gap-0 lg:grid-cols-[300px,1fr]">
-            <div className="border-b border-border/70 bg-background/60 p-6 lg:border-b-0 lg:border-r">
-              <div className="flex h-40 items-center justify-center rounded-3xl border border-border bg-muted/30">
+            <div className="border-b border-gray-100 bg-white/80 p-6 lg:border-b-0 lg:border-r">
+              <div className="flex h-40 items-center justify-center rounded-3xl border border-gray-100 bg-slate-50">
                 <BookOpen className="h-16 w-16 text-primary" />
               </div>
               <div className="mt-6 space-y-4">
-                <div className="rounded-2xl border border-border bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
                     Delivery
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -165,8 +177,8 @@ export default function CourseProfile() {
                     <CourseStatusBadge value={course.status} />
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
                     Subjects
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -174,13 +186,13 @@ export default function CourseProfile() {
                       course.subjects.map((subject) => (
                         <span
                           key={subject}
-                          className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
+                          className="rounded-full border border-primary/10 bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
                         >
                           {subject}
                         </span>
                       ))
                     ) : (
-                      <p className="text-sm text-muted-foreground">No subjects added yet.</p>
+                      <p className="text-sm text-text-secondary">No subjects added yet.</p>
                     )}
                   </div>
                 </div>
@@ -194,57 +206,61 @@ export default function CourseProfile() {
                   return (
                     <div
                       key={item.label}
-                      className="rounded-3xl border border-border bg-card/90 p-4 shadow-sm"
+                      className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
                     >
-                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-sky-100 text-primary">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                         {item.label}
                       </p>
-                      <p className="mt-2 text-lg font-bold text-foreground">{item.value}</p>
+                      <p className="mt-2 font-mono text-lg font-bold text-text-primary">
+                        {item.value}
+                      </p>
                     </div>
                   );
                 })}
               </div>
 
               <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                <Card className="rounded-3xl border-border">
+                <Card>
                   <CardHeader>
                     <CardTitle>Course Overview</CardTitle>
                     <CardDescription>Commercial and academic configuration.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 text-sm">
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Course ID</span>
-                      <span className="font-medium text-foreground">{course.course_id}</span>
+                      <span className="text-text-secondary">Course ID</span>
+                      <span className="font-medium text-text-primary">{course.course_id}</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Mode</span>
-                      <span className="font-medium text-foreground">{course.mode}</span>
+                      <span className="text-text-secondary">Mode</span>
+                      <span className="font-medium text-text-primary">{course.mode}</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Fee</span>
-                      <span className="font-medium text-foreground">{formatCurrency(course.fee_amount)}</span>
+                      <span className="text-text-secondary">Fee</span>
+                      <span className="font-medium text-text-primary">
+                        {formatCurrency(course.fee_amount)}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Duration</span>
-                      <span className="font-medium text-foreground">
+                      <span className="text-text-secondary">Duration</span>
+                      <span className="font-medium text-text-primary">
                         {course.duration_months ? `${course.duration_months} months` : "Flexible"}
                       </span>
                     </div>
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                         Description
                       </p>
-                      <p className="leading-6 text-foreground">
+                      <p className="leading-6 text-text-primary">
                         {course.description || "No description available for this course yet."}
                       </p>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-3xl border-border">
+                <Card>
                   <CardHeader>
                     <CardTitle>Recent Students</CardTitle>
                     <CardDescription>Latest enrollments mapped into this course.</CardDescription>
@@ -254,16 +270,16 @@ export default function CourseProfile() {
                       record.recent_students.map((student) => (
                         <div
                           key={student.id}
-                          className="rounded-2xl border border-border p-4"
+                          className="rounded-2xl border border-gray-100 bg-slate-50/70 p-4"
                         >
-                          <p className="font-semibold text-foreground">{student.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {student.student_id} • {student.status}
+                          <p className="font-semibold text-text-primary">{student.full_name}</p>
+                          <p className="text-sm text-text-secondary">
+                            {student.student_id} | {student.status}
                           </p>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-text-secondary">
                         No students have been enrolled in this course yet.
                       </p>
                     )}
@@ -271,7 +287,7 @@ export default function CourseProfile() {
                 </Card>
               </div>
 
-              <Card className="mt-6 rounded-3xl border-border">
+              <Card className="mt-6">
                 <CardHeader>
                   <CardTitle>Batches Using This Course</CardTitle>
                   <CardDescription>
@@ -283,18 +299,18 @@ export default function CourseProfile() {
                     record.batches.map((batch) => (
                       <div
                         key={batch.id}
-                        className="rounded-3xl border border-border bg-muted/10 p-5"
+                        className="rounded-2xl border border-gray-100 bg-slate-50/70 p-5"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="font-semibold text-foreground">{batch.batch_name}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-semibold text-text-primary">{batch.batch_name}</p>
+                            <p className="text-sm text-text-secondary">
                               {batch.schedule_days || "Schedule not added"}
                             </p>
                           </div>
                           <CourseStatusBadge value={batch.status} />
                         </div>
-                        <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
+                        <div className="mt-4 grid gap-2 text-sm text-text-secondary">
                           <p>
                             Time: {batch.start_time || "--"} to {batch.end_time || "--"}
                           </p>
@@ -329,6 +345,6 @@ export default function CourseProfile() {
         }}
         onSubmit={handleUpdate}
       />
-    </div>
+    </MotionDiv>
   );
 }

@@ -18,6 +18,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { motion } from "framer-motion";
 import DashboardAlertsPanel from "../components/dashboard/DashboardAlertsPanel";
 import DashboardMetricCards from "../components/dashboard/DashboardMetricCards";
 import DashboardQuickActions from "../components/dashboard/DashboardQuickActions";
@@ -31,9 +32,13 @@ import dashboardService from "../services/dashboardService";
 const initialState = {
   overview: {
     total_students: 0,
+    active_students: 0,
     active_courses: 0,
+    active_batches: 0,
     total_batches: 0,
+    planned_batches: 0,
     fees_collected: 0,
+    revenue_this_month: 0,
     pending_fees: 0,
     overdue_fees: 0,
     today_collection: 0,
@@ -81,10 +86,30 @@ const formatCurrency = (value) =>
   }).format(value || 0);
 
 const insightToneStyles = {
-  positive: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  warning: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  destructive: "border-destructive/20 bg-destructive/10 text-destructive",
+  positive: {
+    container: "border-emerald-500/15 bg-emerald-500/[0.08] dark:bg-emerald-500/[0.10]",
+    label: "text-emerald-700 dark:text-emerald-300",
+    value: "text-emerald-900 dark:text-emerald-100",
+    title: "text-emerald-900 dark:text-emerald-100",
+    description: "text-emerald-800/80 dark:text-emerald-100/75",
+  },
+  warning: {
+    container: "border-amber-500/15 bg-amber-500/[0.09] dark:bg-amber-500/[0.12]",
+    label: "text-amber-700 dark:text-amber-300",
+    value: "text-amber-900 dark:text-amber-100",
+    title: "text-amber-900 dark:text-amber-100",
+    description: "text-amber-900/75 dark:text-amber-100/75",
+  },
+  destructive: {
+    container: "border-destructive/15 bg-destructive/[0.08] dark:bg-destructive/[0.12]",
+    label: "text-destructive dark:text-rose-300",
+    value: "text-rose-900 dark:text-rose-100",
+    title: "text-rose-900 dark:text-rose-100",
+    description: "text-rose-900/75 dark:text-rose-100/75",
+  },
 };
+
+const MotionDiv = motion.div;
 
 export default function Dashboard() {
   const [data, setData] = useState(initialState);
@@ -117,24 +142,25 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-8 pb-12">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="space-y-6 pb-10">
+        <div className="page-header">
           <div className="space-y-3">
+            <Skeleton className="h-3 w-32 rounded-full" />
             <Skeleton className="h-10 w-72 rounded-2xl" />
             <Skeleton className="h-4 w-80 rounded-full" />
           </div>
-          <Skeleton className="h-12 w-48 rounded-full" />
+          <Skeleton className="h-10 w-48 rounded-full" />
         </div>
-        <Skeleton className="h-64 rounded-[32px]" />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <Skeleton className="h-64 rounded-2xl" />
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-6">
           {[1, 2, 3, 4, 5, 6].map((item) => (
-            <Skeleton key={item} className="h-36 rounded-[28px]" />
+            <Skeleton key={item} className="h-36 rounded-2xl" />
           ))}
         </div>
-        <Skeleton className="h-52 rounded-[30px]" />
+        <Skeleton className="h-52 rounded-2xl" />
         <div className="grid gap-6 xl:grid-cols-3">
-          <Skeleton className="h-[360px] rounded-[30px] xl:col-span-2" />
-          <Skeleton className="h-[360px] rounded-[30px]" />
+          <Skeleton className="h-[360px] rounded-2xl xl:col-span-2" />
+          <Skeleton className="h-[360px] rounded-2xl" />
         </div>
       </div>
     );
@@ -152,21 +178,22 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6 pb-10"
+    >
+      <div className="page-header">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-            Operations Center
-          </p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
-            Dashboard Command Center
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          <p className="page-kicker">Operations Center</p>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-description">
             Monitor admissions, collections, attendance, and operating risks from one live command center.
           </p>
         </div>
 
-        <div className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-sm">
+        <div className="inline-flex items-center rounded-full border border-border/80 bg-card/80 px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur">
           {new Date().toLocaleDateString("en-IN", {
             weekday: "long",
             year: "numeric",
@@ -176,78 +203,88 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <Card className="overflow-hidden rounded-[32px] border-border bg-gradient-to-br from-primary/20 via-card to-card shadow-lg">
-        <CardContent className="grid gap-6 p-6 xl:grid-cols-[1.2fr,0.8fr]">
+      <Card className="relative overflow-hidden border-border/80 bg-card/95 shadow-card">
+        <div className="pointer-events-none absolute inset-0 hero-mesh opacity-50 dark:opacity-30" />
+        <div className="pointer-events-none absolute inset-0 soft-grid opacity-40 [mask-image:radial-gradient(circle_at_top_left,black,transparent_75%)] dark:opacity-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-primary/10 via-primary/5 to-transparent dark:from-primary/12 dark:via-primary/4 dark:to-transparent" />
+        <CardContent className="relative grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.2fr,0.8fr]">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary shadow-sm backdrop-blur">
               <Sparkles className="h-4 w-4" />
               Smart Dashboard
             </div>
-            <h2 className="mt-5 text-4xl font-black tracking-tight text-foreground">
+            <h2 className="mt-5 max-w-3xl font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {data.insights?.headline || "Institute pulse"}
             </h2>
-            <p className="mt-3 max-w-2xl text-lg leading-8 text-muted-foreground">
+            <p className="mt-3 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
               {data.insights?.subheadline}
             </p>
 
             <div className="mt-6 grid gap-3 md:grid-cols-3">
-              {(data.insights?.cards || []).map((card) => (
+              {(data.insights?.cards || []).map((card) => {
+                const toneStyles = insightToneStyles[card.tone] || insightToneStyles.warning;
+
+                return (
                 <div
                   key={card.title}
-                  className={`rounded-3xl border px-4 py-5 ${insightToneStyles[card.tone] || insightToneStyles.warning}`}
+                  className={`rounded-[1.5rem] border px-4 py-5 shadow-sm backdrop-blur ${toneStyles.container}`}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em]">
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${toneStyles.label}`}>
                     Alert
                   </p>
-                  <p className="mt-3 text-3xl font-black">{card.value}</p>
-                  <p className="mt-2 text-sm font-semibold leading-6">{card.title}</p>
-                  <p className="mt-2 text-sm leading-6 opacity-90">{card.description}</p>
+                  <p className={`mt-3 font-mono text-3xl font-bold ${toneStyles.value}`}>{card.value}</p>
+                  <p className={`mt-2 text-sm font-semibold leading-6 ${toneStyles.title}`}>{card.title}</p>
+                  <p className={`mt-2 text-sm leading-6 ${toneStyles.description}`}>{card.description}</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-border bg-background/80 p-5 shadow-sm">
+          <div className="rounded-[1.75rem] border border-border/80 bg-background/55 p-5 shadow-card backdrop-blur-xl">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary shadow-sm">
                 <Lightbulb className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Suggested Actions
                 </p>
-                <p className="text-lg font-semibold text-foreground">What to do next</p>
+                <p className="font-display text-lg font-semibold text-foreground">What to do next</p>
               </div>
             </div>
 
             <div className="mt-5 space-y-3">
               {(data.insights?.suggestions || []).map((suggestion, index) => (
-                <div key={index} className="rounded-2xl border border-border bg-muted/10 px-4 py-4 text-sm leading-6 text-foreground">
+                <div
+                  key={index}
+                  className="rounded-2xl border border-border/70 bg-background/65 px-4 py-4 text-sm leading-6 text-foreground shadow-sm"
+                >
                   {suggestion}
                 </div>
               ))}
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Today's Collection
                 </p>
-                <p className="mt-2 text-2xl font-black text-foreground">
+                <p className="mt-2 font-mono text-2xl font-bold text-foreground">
                   {formatCurrency(data.insights?.today_snapshot?.collection || 0)}
                 </p>
               </div>
-              <div className="rounded-2xl border border-border p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <div className="rounded-2xl border border-border/70 bg-background/60 p-4 shadow-sm">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Today's Attendance
                 </p>
-                <p className="mt-2 text-2xl font-black text-foreground">
+                <p className="mt-2 font-mono text-2xl font-bold text-foreground">
                   {data.insights?.today_snapshot?.attendance_percentage || 0}%
                 </p>
               </div>
             </div>
 
-            <Button asChild className="mt-6 w-full gap-2">
+            <Button asChild className="mt-6 w-full gap-2 shadow-sm">
               <Link to="/admin/fees">
                 <TrendingUp className="h-4 w-4" />
                 Review Priority Work
@@ -262,14 +299,14 @@ export default function Dashboard() {
       <DashboardQuickActions />
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <Card className="rounded-[30px] border-border shadow-sm xl:col-span-2">
-          <CardHeader className="border-b border-border bg-muted/10">
+        <Card className="xl:col-span-2">
+          <CardHeader className="border-b border-gray-100 bg-slate-50/80">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl">Revenue vs Expenses</CardTitle>
+                <CardTitle className="text-xl">Revenue vs Expenses</CardTitle>
                 <CardDescription>Fee collections and expenses across the last 6 months.</CardDescription>
               </div>
-              <div className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+              <div className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-text-secondary">
                 Last 6 months
               </div>
             </div>
@@ -289,14 +326,15 @@ export default function Dashboard() {
                         <stop offset="95%" stopColor="#fb7185" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `Rs. ${value}`} />
+                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.25)" />
+                    <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `Rs. ${value}`} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        borderRadius: "12px",
-                        border: "1px solid hsl(var(--border))",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "16px",
+                        border: "1px solid rgba(229, 231, 235, 1)",
+                        boxShadow: "0 16px 32px rgba(15, 23, 42, 0.08)",
                       }}
                     />
                     <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#dashboardRevenue)" strokeWidth={3} />
@@ -313,9 +351,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[30px] border-border shadow-sm">
-          <CardHeader className="border-b border-border bg-muted/10">
-            <CardTitle className="text-2xl">Attendance Trend</CardTitle>
+        <Card>
+          <CardHeader className="border-b border-gray-100 bg-slate-50/80">
+            <CardTitle className="text-xl">Attendance Trend</CardTitle>
             <CardDescription>Daily attendance percentage over the last 7 days.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
@@ -323,15 +361,16 @@ export default function Dashboard() {
               <div className="h-[320px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={attendanceChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="label" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
+                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.25)" />
+                    <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
                     <Tooltip
                       cursor={{ fill: "hsl(var(--muted))" }}
                       contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        borderRadius: "12px",
-                        border: "1px solid hsl(var(--border))",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "16px",
+                        border: "1px solid rgba(229, 231, 235, 1)",
+                        boxShadow: "0 16px 32px rgba(15, 23, 42, 0.08)",
                       }}
                     />
                     <Bar dataKey="attendance_percentage" fill="hsl(var(--primary))" radius={[10, 10, 0, 0]} maxBarSize={42} />
@@ -349,25 +388,26 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <Card className="rounded-[30px] border-border shadow-sm">
-        <CardHeader className="border-b border-border bg-muted/10">
-          <CardTitle className="text-2xl">Course Performance</CardTitle>
+      <Card>
+        <CardHeader className="border-b border-gray-100 bg-slate-50/80">
+          <CardTitle className="text-xl">Course Performance</CardTitle>
           <CardDescription>Top courses by enrolled students with collection depth.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6 p-6 xl:grid-cols-[1.2fr,0.8fr]">
+        <CardContent className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.2fr,0.8fr]">
           <div>
             {courseChart.length ? (
               <div className="h-[320px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={courseChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="course_name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(148, 163, 184, 0.25)" />
+                    <XAxis dataKey="course_name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        borderRadius: "12px",
-                        border: "1px solid hsl(var(--border))",
+                        backgroundColor: "#ffffff",
+                        borderRadius: "16px",
+                        border: "1px solid rgba(229, 231, 235, 1)",
+                        boxShadow: "0 16px 32px rgba(15, 23, 42, 0.08)",
                       }}
                     />
                     <Bar dataKey="enrolled_students" fill="hsl(var(--primary))" radius={[10, 10, 0, 0]} maxBarSize={48} />
@@ -384,17 +424,17 @@ export default function Dashboard() {
 
           <div className="space-y-4">
             {courseChart.map((course) => (
-              <div key={course.course_id} className="rounded-3xl border border-border bg-background/60 p-5">
-                <p className="font-semibold text-foreground">{course.course_name}</p>
-                <div className="mt-3 grid gap-2 text-sm text-muted-foreground">
+              <div key={course.course_id} className="rounded-2xl border border-gray-100 bg-slate-50/70 p-5 shadow-sm">
+                <p className="font-display text-base font-semibold text-text-primary">{course.course_name}</p>
+                <div className="mt-3 grid gap-2 text-sm text-text-secondary">
                   <p>
-                    Students: <span className="font-medium text-foreground">{course.enrolled_students}</span>
+                    Students: <span className="font-medium text-text-primary">{course.enrolled_students}</span>
                   </p>
                   <p>
-                    Collected: <span className="font-medium text-foreground">{formatCurrency(course.collected_amount)}</span>
+                    Collected: <span className="font-medium text-text-primary">{formatCurrency(course.collected_amount)}</span>
                   </p>
                   <p>
-                    Pending: <span className="font-medium text-foreground">{formatCurrency(course.pending_amount)}</span>
+                    Pending: <span className="font-medium text-text-primary">{formatCurrency(course.pending_amount)}</span>
                   </p>
                 </div>
               </div>
@@ -407,6 +447,6 @@ export default function Dashboard() {
         <DashboardRecentActivity items={data.recent_activity} />
         <DashboardAlertsPanel alerts={data.alerts} />
       </div>
-    </div>
+    </MotionDiv>
   );
 }

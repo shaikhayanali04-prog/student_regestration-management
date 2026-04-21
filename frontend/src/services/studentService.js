@@ -1,4 +1,4 @@
-import api from "./api";
+import api, { normalizeBackendAssetUrl } from "./api";
 
 const buildFormData = (payload) => {
   const formData = new FormData();
@@ -16,10 +16,51 @@ const buildFormData = (payload) => {
 
 const unwrap = (response) => response?.data?.data;
 
+const normalizeStudent = (student) => {
+  if (!student || typeof student !== "object") {
+    return student;
+  }
+
+  return {
+    ...student,
+    student_photo: normalizeBackendAssetUrl(student.student_photo),
+  };
+};
+
+const normalizeStudentCollection = (payload) => {
+  if (!payload || typeof payload !== "object") {
+    return payload;
+  }
+
+  if (!Array.isArray(payload.items)) {
+    return payload;
+  }
+
+  return {
+    ...payload,
+    items: payload.items.map(normalizeStudent),
+  };
+};
+
+const normalizeStudentRecord = (payload) => {
+  if (!payload || typeof payload !== "object") {
+    return payload;
+  }
+
+  if (!payload.student) {
+    return normalizeStudent(payload);
+  }
+
+  return {
+    ...payload,
+    student: normalizeStudent(payload.student),
+  };
+};
+
 const studentService = {
   async getStudents(params = {}) {
     const response = await api.get("/students", { params });
-    return unwrap(response);
+    return normalizeStudentCollection(unwrap(response));
   },
 
   async getMeta() {
@@ -33,7 +74,7 @@ const studentService = {
     const response = await api.get("/students", {
       params: { action: "view", id },
     });
-    return unwrap(response);
+    return normalizeStudentRecord(unwrap(response));
   },
 
   async createStudent(payload) {
@@ -41,7 +82,7 @@ const studentService = {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    return unwrap(response);
+    return normalizeStudentRecord(unwrap(response));
   },
 
   async updateStudent(id, payload) {
@@ -51,7 +92,7 @@ const studentService = {
       { headers: { "Content-Type": "multipart/form-data" } },
     );
 
-    return unwrap(response);
+    return normalizeStudentRecord(unwrap(response));
   },
 
   async deleteStudent(id) {

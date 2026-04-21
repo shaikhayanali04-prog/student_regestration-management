@@ -35,20 +35,19 @@ export default function StudentSummaryCards({ summary = {} }) {
         const Icon = card.icon;
 
         return (
-          <Card
-            key={card.key}
-            className={`overflow-hidden rounded-[28px] border-border bg-gradient-to-br ${card.accent}`}
-          >
-            <CardContent className="flex items-start justify-between p-6">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <Card key={card.key} className="overflow-hidden border-gray-100 bg-white">
+            <CardContent className="flex items-start justify-between gap-4 p-5 sm:p-6">
+              <div className="space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                   {card.label}
                 </p>
-                <p className="mt-3 text-3xl font-black tracking-tight text-foreground">
+                <p className="font-mono text-3xl font-bold tracking-tight text-text-primary">
                   {summary[card.key] || 0}
                 </p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-background/70 text-primary shadow-sm">
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${card.accent} text-primary shadow-sm`}
+              >
                 <Icon className="h-5 w-5" />
               </div>
             </CardContent>

@@ -8,6 +8,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import AttendanceSheetTable from "../components/attendance/AttendanceSheetTable";
 import AttendanceSummaryCards from "../components/attendance/AttendanceSummaryCards";
 import { Button } from "../components/ui/button";
@@ -59,6 +60,8 @@ const initialReport = {
   recent_sessions: [],
   low_attendance_students: [],
 };
+
+const MotionDiv = motion.div;
 
 const formatDate = (value) =>
   value
@@ -294,22 +297,23 @@ export default function Attendance() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6 pb-10"
+    >
+      <div className="page-header">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-            Attendance Module
-          </p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground">
-            Batch Attendance Operations
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          <p className="page-kicker">Attendance Module</p>
+          <h1 className="page-title">Batch Attendance Operations</h1>
+          <p className="page-description">
             Mark attendance batch-wise, review recent sessions, and surface low-attendance risks before they impact student outcomes.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" className="gap-2" onClick={refreshAll}>
+          <Button variant="secondary" onClick={refreshAll}>
             <RotateCcw className="h-4 w-4" />
             Refresh
           </Button>
@@ -326,10 +330,10 @@ export default function Attendance() {
 
       {feedback ? (
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${
+          className={`rounded-2xl border px-4 py-3 text-sm shadow-sm ${
             feedback.type === "error"
-              ? "border-destructive/20 bg-destructive/10 text-destructive"
-              : "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              ? "border-red-200 bg-red-50 text-red-600"
+              : "border-green-200 bg-green-50 text-green-700"
           }`}
         >
           {feedback.message}
@@ -338,11 +342,11 @@ export default function Attendance() {
 
       <AttendanceSummaryCards report={report} />
 
-      <Card className="rounded-[30px] border-border shadow-sm">
-        <CardHeader className="space-y-4 border-b border-border bg-muted/10">
+      <Card>
+        <CardHeader className="space-y-4 border-b border-gray-100 bg-slate-50/80">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <CardTitle className="text-2xl">Attendance Sheet</CardTitle>
+              <CardTitle className="text-xl">Attendance Sheet</CardTitle>
               <CardDescription>
                 Choose a batch and date, then mark or update each student's attendance in one save action.
               </CardDescription>
@@ -351,7 +355,7 @@ export default function Attendance() {
               {["Present", "Absent", "Late"].map((status) => (
                 <Button
                   key={status}
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => markAll(status)}
                   disabled={!sheetStudents.length}
@@ -366,7 +370,7 @@ export default function Attendance() {
             <select
               value={selectedBatchId}
               onChange={(event) => setSelectedBatchId(event.target.value)}
-              className="flex h-10 w-full rounded-full border border-input bg-background px-4 text-sm"
+              className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-text-primary shadow-sm"
             >
               {batches.map((batch) => (
                 <option key={batch.id} value={batch.id}>
@@ -378,13 +382,13 @@ export default function Attendance() {
               type="date"
               value={selectedDate}
               onChange={(event) => setSelectedDate(event.target.value)}
-              className="rounded-full"
+              className=""
             />
-            <div className="rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground">
-              Students in batch: <span className="font-semibold text-foreground">{activeBatch?.student_count || 0}</span>
+            <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-text-secondary shadow-sm">
+              Students in batch: <span className="font-semibold text-text-primary">{activeBatch?.student_count || 0}</span>
             </div>
-            <div className="rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground">
-              Saved attendance: <span className="font-semibold text-foreground">{formatPercent(sheet.summary?.attendance_percentage || 0)}</span>
+            <div className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-text-secondary shadow-sm">
+              Saved attendance: <span className="font-semibold text-text-primary">{formatPercent(sheet.summary?.attendance_percentage || 0)}</span>
             </div>
           </div>
         </CardHeader>
@@ -415,18 +419,18 @@ export default function Attendance() {
             </div>
           ) : (
             <>
-              <div className="grid gap-4 border-b border-border px-6 py-5 md:grid-cols-4">
+              <div className="grid gap-4 border-b border-gray-100 px-6 py-5 md:grid-cols-4">
                 {[
                   ["Marked Students", sheet.summary?.students_marked || 0],
                   ["Present", sheet.summary?.present_count || 0],
                   ["Absent", sheet.summary?.absent_count || 0],
                   ["Late", sheet.summary?.late_count || 0],
                 ].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl border border-border bg-background/60 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  <div key={label} className="rounded-2xl border border-gray-100 bg-slate-50/70 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                       {label}
                     </p>
-                    <p className="mt-2 text-2xl font-black text-foreground">{value}</p>
+                    <p className="mt-2 font-mono text-2xl font-bold text-text-primary">{value}</p>
                   </div>
                 ))}
               </div>
@@ -443,7 +447,7 @@ export default function Attendance() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr,0.9fr]">
-        <Card className="rounded-[30px] border-border shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle>Recent Sessions</CardTitle>
             <CardDescription>
@@ -455,7 +459,7 @@ export default function Attendance() {
               [1, 2, 3].map((item) => <Skeleton key={item} className="h-24 rounded-2xl" />)
             ) : report.recent_sessions?.length ? (
               report.recent_sessions.map((session) => (
-                <div key={`${session.batch_id}-${session.date}`} className="rounded-3xl border border-border bg-muted/10 p-5">
+                <div key={`${session.batch_id}-${session.date}`} className="rounded-2xl border border-gray-100 bg-slate-50/70 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-foreground">{session.batch_name}</p>
@@ -465,10 +469,10 @@ export default function Attendance() {
                       {formatPercent(session.attendance_percentage)}
                     </div>
                   </div>
-                  <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
-                    <p>Present: <span className="font-medium text-foreground">{session.present_count}</span></p>
-                    <p>Absent: <span className="font-medium text-foreground">{session.absent_count}</span></p>
-                    <p>Late: <span className="font-medium text-foreground">{session.late_count}</span></p>
+                  <div className="mt-4 grid gap-3 text-sm text-text-secondary md:grid-cols-3">
+                    <p>Present: <span className="font-medium text-text-primary">{session.present_count}</span></p>
+                    <p>Absent: <span className="font-medium text-text-primary">{session.absent_count}</span></p>
+                    <p>Late: <span className="font-medium text-text-primary">{session.late_count}</span></p>
                   </div>
                 </div>
               ))
@@ -482,7 +486,7 @@ export default function Attendance() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[30px] border-border shadow-sm">
+        <Card>
           <CardHeader>
             <CardTitle>Low Attendance Alerts</CardTitle>
             <CardDescription>
@@ -494,19 +498,19 @@ export default function Attendance() {
               [1, 2, 3].map((item) => <Skeleton key={item} className="h-20 rounded-2xl" />)
             ) : report.low_attendance_students?.length ? (
               report.low_attendance_students.map((student) => (
-                <div key={`${student.student_id}-${student.batch_name}`} className="rounded-3xl border border-border bg-muted/10 p-5">
+                <div key={`${student.student_id}-${student.batch_name}`} className="rounded-2xl border border-gray-100 bg-slate-50/70 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-foreground">{student.student_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {student.student_code} - {student.batch_name}
+                      <p className="text-sm text-text-secondary">
+                        {student.student_code} | {student.batch_name}
                       </p>
                     </div>
                     <div className="rounded-full bg-destructive/10 px-3 py-1 text-sm font-semibold text-destructive">
                       {formatPercent(student.attendance_percentage)}
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-muted-foreground">
+                  <p className="mt-3 text-sm text-text-secondary">
                     {student.attended_sessions} of {student.total_sessions} sessions attended.
                   </p>
                 </div>
@@ -522,26 +526,26 @@ export default function Attendance() {
         </Card>
       </div>
 
-      <Card className="rounded-[30px] border-border shadow-sm">
-        <CardHeader className="space-y-4 border-b border-border bg-muted/10">
+      <Card>
+        <CardHeader className="space-y-4 border-b border-gray-100 bg-slate-50/80">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <CardTitle className="text-2xl">Attendance History</CardTitle>
+              <CardTitle className="text-xl">Attendance History</CardTitle>
               <CardDescription>
                 Search by student or batch, filter by status, and review recorded attendance entries.
               </CardDescription>
             </div>
             <div className="flex flex-col gap-3 md:flex-row">
-              <div className="relative min-w-[280px]">
+              <div className="search-shell min-w-[280px] bg-white">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder="Search by student, batch, or course"
-                  className="rounded-full pl-10"
+                  className="border-0 pl-10 shadow-none focus-visible:ring-0"
                 />
               </div>
-              <Button variant="outline" className="rounded-full" onClick={resetFilters}>
+              <Button variant="secondary" onClick={resetFilters}>
                 Clear Filters
               </Button>
             </div>
@@ -553,7 +557,7 @@ export default function Attendance() {
               onChange={(event) =>
                 setFilters((current) => ({ ...current, page: 1, status: event.target.value }))
               }
-              className="flex h-10 w-full rounded-full border border-input bg-background px-4 text-sm"
+              className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-text-primary shadow-sm"
             >
               <option value="">All statuses</option>
               {statuses.map((status) => (
@@ -568,7 +572,7 @@ export default function Attendance() {
               onChange={(event) =>
                 setFilters((current) => ({ ...current, page: 1, date_from: event.target.value }))
               }
-              className="rounded-full"
+              className=""
             />
             <Input
               type="date"
@@ -576,7 +580,7 @@ export default function Attendance() {
               onChange={(event) =>
                 setFilters((current) => ({ ...current, page: 1, date_to: event.target.value }))
               }
-              className="rounded-full"
+              className=""
             />
             <select
               value={String(filters.limit)}
@@ -587,7 +591,7 @@ export default function Attendance() {
                   limit: Number(event.target.value),
                 }))
               }
-              className="flex h-10 w-full rounded-full border border-input bg-background px-4 text-sm"
+              className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-text-primary shadow-sm"
             >
               {[10, 20, 30].map((size) => (
                 <option key={size} value={size}>
@@ -628,7 +632,7 @@ export default function Attendance() {
               <div className="hidden lg:block">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableRow className="hover:bg-transparent">
                       <TableHead>Date</TableHead>
                       <TableHead>Student</TableHead>
                       <TableHead>Batch</TableHead>
@@ -651,7 +655,7 @@ export default function Attendance() {
                           <p className="text-sm text-muted-foreground">{item.course_name}</p>
                         </TableCell>
                         <TableCell>
-                          <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                          <span className="rounded-full border border-primary/10 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                             {item.status}
                           </span>
                         </TableCell>
@@ -673,7 +677,7 @@ export default function Attendance() {
                           <p className="font-semibold text-foreground">{item.student_name}</p>
                           <p className="text-sm text-muted-foreground">{item.student_code}</p>
                         </div>
-                        <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                        <span className="rounded-full border border-primary/10 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
                           {item.status}
                         </span>
                       </div>
@@ -688,14 +692,14 @@ export default function Attendance() {
                 ))}
               </div>
 
-              <div className="flex flex-col gap-4 border-t border-border px-6 py-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 border-t border-gray-100 px-6 py-4 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
                 <p>
                   Showing {(pagination.page - 1) * pagination.limit + 1}-
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} records
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() =>
                       setFilters((current) => ({ ...current, page: current.page - 1 }))
@@ -708,7 +712,7 @@ export default function Attendance() {
                     Page {pagination.page} of {pagination.total_pages || 1}
                   </span>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() =>
                       setFilters((current) => ({ ...current, page: current.page + 1 }))
@@ -723,6 +727,6 @@ export default function Attendance() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </MotionDiv>
   );
 }

@@ -11,6 +11,7 @@ import {
   ReceiptText,
   Wallet,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { EmptyState } from "../components/ui/empty-state";
@@ -39,6 +40,8 @@ const formatDate = (value) =>
         year: "numeric",
       })
     : "Not available";
+
+const MotionDiv = motion.div;
 
 export default function FeeLedgerProfile() {
   const { feeId } = useParams();
@@ -238,21 +241,26 @@ export default function FeeLedgerProfile() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <MotionDiv
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-6 pb-10"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <Button variant="ghost" asChild className="mb-3 -ml-3 text-muted-foreground">
+          <Button variant="ghost" asChild className="mb-3 -ml-3 text-text-secondary">
             <Link to="/admin/fees">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to fees
             </Link>
           </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary">
             {ledger.student_name}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {ledger.student_code} - {ledger.course_name}
-            {ledger.batch_name ? ` - ${ledger.batch_name}` : ""}
+          <p className="mt-1 text-sm text-text-secondary">
+            {ledger.student_code} | {ledger.course_name}
+            {ledger.batch_name ? ` | ${ledger.batch_name}` : ""}
           </p>
         </div>
 
@@ -273,40 +281,40 @@ export default function FeeLedgerProfile() {
         <div
           className={`rounded-2xl border px-4 py-3 text-sm ${
             feedback.type === "error"
-              ? "border-destructive/20 bg-destructive/10 text-destructive"
-              : "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
           }`}
         >
           {feedback.message}
         </div>
       ) : null}
 
-      <Card className="overflow-hidden rounded-[28px] border-border bg-gradient-to-br from-primary/15 via-card to-card shadow-lg">
+      <Card className="overflow-hidden border-gray-100 bg-gradient-to-br from-primary/10 via-white to-sky-50">
         <CardContent className="p-0">
           <div className="grid gap-0 lg:grid-cols-[300px,1fr]">
-            <div className="border-b border-border/70 bg-background/60 p-6 lg:border-b-0 lg:border-r">
-              <div className="flex h-40 items-center justify-center rounded-3xl border border-border bg-muted/30">
+            <div className="border-b border-gray-100 bg-white/80 p-6 lg:border-b-0 lg:border-r">
+              <div className="flex h-40 items-center justify-center rounded-3xl border border-gray-100 bg-slate-50">
                 <ReceiptText className="h-16 w-16 text-primary" />
               </div>
               <div className="mt-6 space-y-4">
-                <div className="rounded-2xl border border-border bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
                     Collection Status
                   </p>
-                  <div className="mt-3 space-y-2 text-sm text-foreground">
+                  <div className="mt-3 space-y-2 text-sm text-text-primary">
                     <p>Due Amount: {formatCurrency(ledger.due_amount)}</p>
-                    <p className="text-muted-foreground">
+                    <p className="text-text-secondary">
                       Last payment {ledger.last_payment_date ? formatDate(ledger.last_payment_date) : "not recorded"}
                     </p>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-text-secondary">
                     Payment Plan
                   </p>
-                  <div className="mt-3 space-y-2 text-sm text-foreground">
+                  <div className="mt-3 space-y-2 text-sm text-text-primary">
                     <p>{ledger.installment_count || 0} planned installments</p>
-                    <p className="text-muted-foreground">
+                    <p className="text-text-secondary">
                       Due by {formatDate(ledger.due_date)}
                     </p>
                   </div>
@@ -321,30 +329,30 @@ export default function FeeLedgerProfile() {
                   return (
                     <div
                       key={item.label}
-                      className="rounded-3xl border border-border bg-card/90 p-4 shadow-sm"
+                      className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
                     >
-                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-sky-100 text-primary">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-text-secondary">
                         {item.label}
                       </p>
-                      <p className="mt-2 text-lg font-bold text-foreground">{item.value}</p>
+                      <p className="mt-2 font-mono text-lg font-bold text-text-primary">{item.value}</p>
                     </div>
                   );
                 })}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-border bg-background/60 p-2">
+              <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-gray-100 bg-white/85 p-2 shadow-sm">
                 {tabs.map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
+                    className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
                       activeTab === tab
-                        ? "bg-primary text-primary-foreground shadow"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-text-secondary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
                     {tab}
@@ -355,71 +363,71 @@ export default function FeeLedgerProfile() {
               <div className="mt-6">
                 {activeTab === "Overview" ? (
                   <div className="grid gap-6 lg:grid-cols-2">
-                    <Card className="rounded-3xl border-border">
+                    <Card>
                       <CardHeader>
                         <CardTitle>Fee Plan Overview</CardTitle>
                         <CardDescription>Net fee, discount policy, due date, and plan guidance.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4 text-sm">
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Total Fee</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.total_fee)}</span>
+                          <span className="text-text-secondary">Total Fee</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.total_fee)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Discount</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.discount)}</span>
+                          <span className="text-text-secondary">Discount</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.discount)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Net Fee</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.net_fee)}</span>
+                          <span className="text-text-secondary">Net Fee</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.net_fee)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Due Date</span>
-                          <span className="font-medium text-foreground">{formatDate(ledger.due_date)}</span>
+                          <span className="text-text-secondary">Due Date</span>
+                          <span className="font-medium text-text-primary">{formatDate(ledger.due_date)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Joined On</span>
-                          <span className="font-medium text-foreground">{formatDate(ledger.joined_date)}</span>
+                          <span className="text-text-secondary">Joined On</span>
+                          <span className="font-medium text-text-primary">{formatDate(ledger.joined_date)}</span>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="rounded-3xl border-border">
+                    <Card>
                       <CardHeader>
                         <CardTitle>Collection Summary</CardTitle>
                         <CardDescription>Operational view of collected, overdue, and late-fee totals.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4 text-sm">
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Collected</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.amount_paid)}</span>
+                          <span className="text-text-secondary">Collected</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.amount_paid)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Late Fee Collected</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.late_fee_collected)}</span>
+                          <span className="text-text-secondary">Late Fee Collected</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.late_fee_collected)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Total Received</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.total_collected)}</span>
+                          <span className="text-text-secondary">Total Received</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.total_collected)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Pending Due</span>
-                          <span className="font-medium text-foreground">{formatCurrency(ledger.due_amount)}</span>
+                          <span className="text-text-secondary">Pending Due</span>
+                          <span className="font-medium text-text-primary">{formatCurrency(ledger.due_amount)}</span>
                         </div>
                         <div className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">Recorded Payments</span>
-                          <span className="font-medium text-foreground">{ledger.payment_count}</span>
+                          <span className="text-text-secondary">Recorded Payments</span>
+                          <span className="font-medium text-text-primary">{ledger.payment_count}</span>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="rounded-3xl border-border lg:col-span-2">
+                    <Card className="lg:col-span-2">
                       <CardHeader>
                         <CardTitle>Plan Notes</CardTitle>
                         <CardDescription>Special collection terms, installment guidance, and admin notes.</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="whitespace-pre-wrap leading-7 text-foreground">
+                        <p className="whitespace-pre-wrap leading-7 text-text-primary">
                           {ledger.notes || "No plan notes were added for this student yet."}
                         </p>
                       </CardContent>
@@ -433,7 +441,7 @@ export default function FeeLedgerProfile() {
                       {payments.map((payment) => (
                         <Card
                           key={payment.id}
-                          className={`rounded-3xl border-border transition ${
+                          className={`border-gray-100 transition ${
                             String(selectedPaymentId) === String(payment.id)
                               ? "ring-2 ring-primary/40"
                               : ""
@@ -442,13 +450,13 @@ export default function FeeLedgerProfile() {
                           <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                               <div className="flex items-center gap-3">
-                                <p className="font-semibold text-foreground">{formatCurrency(payment.total_collected)}</p>
-                                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                                <p className="font-mono font-semibold text-text-primary">{formatCurrency(payment.total_collected)}</p>
+                                <span className="rounded-full border border-primary/10 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                                   {payment.receipt_number || "Receipt pending"}
                                 </span>
                               </div>
-                              <div className="mt-2 grid gap-1 text-sm text-muted-foreground">
-                                <p>{payment.payment_method} - {formatDate(payment.payment_date)}</p>
+                              <div className="mt-2 grid gap-1 text-sm text-text-secondary">
+                                <p>{payment.payment_method} | {formatDate(payment.payment_date)}</p>
                                 <p>
                                   Tuition {formatCurrency(payment.amount_paid)} | Late fee {formatCurrency(payment.late_fee)}
                                 </p>
@@ -457,7 +465,7 @@ export default function FeeLedgerProfile() {
                             </div>
 
                             <div className="flex flex-col gap-3 lg:items-end">
-                              <p className="max-w-md text-sm text-muted-foreground lg:text-right">
+                              <p className="max-w-md text-sm text-text-secondary lg:text-right">
                                 {payment.remarks || "No remarks added for this payment."}
                               </p>
                               <Button
@@ -489,7 +497,7 @@ export default function FeeLedgerProfile() {
                 {activeTab === "Receipt" ? (
                   payments.length ? (
                     <div className="grid gap-6 lg:grid-cols-[280px,1fr]">
-                      <Card className="rounded-3xl border-border">
+                      <Card>
                         <CardHeader>
                           <CardTitle>Receipt History</CardTitle>
                           <CardDescription>Choose a payment entry to preview its receipt.</CardDescription>
@@ -503,16 +511,16 @@ export default function FeeLedgerProfile() {
                               className={`w-full rounded-2xl border p-4 text-left transition ${
                                 String(selectedPaymentId) === String(payment.id)
                                   ? "border-primary bg-primary/10"
-                                  : "border-border bg-card hover:bg-muted/20"
+                                  : "border-gray-100 bg-white hover:bg-slate-50"
                               }`}
                             >
-                              <p className="font-semibold text-foreground">
+                              <p className="font-semibold text-text-primary">
                                 {payment.receipt_number || "Receipt pending"}
                               </p>
-                              <p className="mt-1 text-sm text-muted-foreground">
+                              <p className="mt-1 text-sm text-text-secondary">
                                 {formatDate(payment.payment_date)}
                               </p>
-                              <p className="mt-2 text-sm text-foreground">
+                              <p className="mt-2 font-mono text-sm text-text-primary">
                                 {formatCurrency(payment.total_collected)}
                               </p>
                             </button>
@@ -570,6 +578,6 @@ export default function FeeLedgerProfile() {
         }}
         onSubmit={handleRecordPayment}
       />
-    </div>
+    </MotionDiv>
   );
 }
