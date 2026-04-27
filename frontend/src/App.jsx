@@ -15,14 +15,13 @@ import FeeLedgerProfile from './pages/FeeLedgerProfile';
 import Attendance from './pages/Attendance';
 import Faculty from './pages/Faculty';
 import FacultyProfile from './pages/FacultyProfile';
-import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/home" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         
         <Route element={<ProtectedRoute />}>
@@ -42,7 +41,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

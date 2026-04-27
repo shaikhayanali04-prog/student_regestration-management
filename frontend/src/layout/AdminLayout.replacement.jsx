@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
-  Home,
   Users,
   BookOpen,
   GraduationCap,
@@ -134,7 +133,7 @@ export default function AdminLayout() {
       >
         <div className="flex h-16 items-center border-b border-border px-4">
           <Link
-            to="/"
+            to="/admin"
             onClick={closeSidebar}
             className={`flex items-center gap-3 ${compactSidebar ? 'justify-center' : ''}`}
           >
@@ -222,17 +221,6 @@ export default function AdminLayout() {
               ) : null}
             </div>
 
-            {!compactSidebar ? (
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs text-text-secondary">
-                <div className="flex items-center gap-2">
-                  <Home className="h-4 w-4 text-primary" />
-                  <span>View landing page</span>
-                </div>
-                <Link to="/" onClick={closeSidebar} className="font-medium text-primary">
-                  Open
-                </Link>
-              </div>
-            ) : null}
           </div>
         </div>
       </aside>
@@ -278,18 +266,6 @@ export default function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Button
-              asChild
-              variant="secondary"
-              size="sm"
-              className="hidden lg:inline-flex"
-            >
-              <Link to="/">
-                <Home className="h-4 w-4" />
-                View Site
-              </Link>
-            </Button>
-
             <Button
               variant="outline"
               size="sm"
